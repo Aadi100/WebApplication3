@@ -1,5 +1,14 @@
+using Microsoft.AspNetCore.HttpOverrides;
+using System.Net;
 var builder = WebApplication.CreateBuilder(args);
 
+// Configure forwarded headers
+builder.Services.Configure<ForwardedHeadersOptions>(options =>
+{
+    options.KnownProxies.Add(IPAddress.Parse("http://portal.thedragonzone.com/"));
+});
+
+builder.Services.AddAuthentication();
 // Add services to the container.
 builder.Services.AddRazorPages();
 
@@ -13,6 +22,15 @@ if (!app.Environment.IsDevelopment())
 app.UseStaticFiles();
 
 app.UseRouting();
+
+app.UseForwardedHeaders(new ForwardedHeadersOptions
+{
+    ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
+});
+
+app.UseAuthentication();
+
+app.MapGet("/", () => "Hello ForwardedHeadersOptions!");
 
 app.UseAuthorization();
 
